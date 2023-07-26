@@ -1,0 +1,13 @@
+{
+  "name": "siresto",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev-react": "cd fe && npm run dev",
+    "dev-hapi": "cd be && npm run dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,5 +1,6 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
+const MapEmployeesToModels = require('../../utils/map/employees');
 
 class EmployeesService {
   constructor() {
@@ -22,7 +23,6 @@ class EmployeesService {
     return result.rows[0].id;
   }
 
-  // need fix
   async getEmployees() {
     const result = await this._pool.query(
       `SELECT 
@@ -38,10 +38,9 @@ class EmployeesService {
       throw new Error('Gagal mendapatkan pegawai.');
     }
 
-    return result.rows.map; // fix map to model employees
+    return result.rows.map(MapEmployeesToModels);
   }
 
-  // need fix
   async getEmployeeById(employeeId) {
     const query = {
       text: `
@@ -54,7 +53,9 @@ class EmployeesService {
                 u.address
                 FROM employees e
                     LEFT JOIN users u ON u.id = e.user_id
+                    WHERE e.id = $1
         `,
+      values: [employeeId],
     };
 
     const result = await this._pool.query(query);
@@ -63,7 +64,7 @@ class EmployeesService {
       throw new Error('Gagal mendapatkan pegawai, Id tidak ditemukan.');
     }
 
-    return result.rows.map; // fix map to model employees
+    return result.rows.map(MapEmployeesToModels)[0];
   }
 
   async deleteEmployeeById(employeeId) {

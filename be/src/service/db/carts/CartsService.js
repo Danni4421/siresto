@@ -1,5 +1,6 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
+const MapCartsToModels = require('../../utils/map/carts');
 
 class CartsService {
   constructor() {
@@ -23,7 +24,6 @@ class CartsService {
     return result.rows[0].id;
   }
 
-  // need to fix
   async getCarts(userId) {
     const query = {
       text: `
@@ -47,7 +47,7 @@ class CartsService {
       throw new Error('Gagal mendapatkan order.');
     }
 
-    return result.rows.map; // fix map to model carts
+    return result.rows.map(MapCartsToModels);
   }
 
   async putCartById(cartId, { status }) {

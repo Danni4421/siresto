@@ -1,6 +1,7 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const bcrypt = require('bcrypt');
+const MapUsersToModels = require('../../utils/map/users');
 
 class UsersService {
   constructor() {
@@ -49,7 +50,7 @@ class UsersService {
       throw new Error('User tidak ditemukan.');
     }
 
-    return result.rows.map; // fix: map to model users
+    return result.rows.map(MapUsersToModels);
   }
 
   async getUserById(userId) {
@@ -69,7 +70,7 @@ class UsersService {
       throw new Error('Gagal mendapatkan User, Id tidak ditemukan.');
     }
 
-    return result.rows.map; // fix: map to model users
+    return result.rows.map(MapUsersToModels)[0];
   }
 
   async putUserById(userId, { username, firstName, lastName, email, address }) {

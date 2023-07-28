@@ -20,7 +20,6 @@ class IngredientsService {
     }
   }
 
-  // need to fix
   async getIngredients() {
     const result = await this._pool.query(`
         SELECT id, name, stock FROM ingredients;
@@ -30,7 +29,7 @@ class IngredientsService {
       throw new Error('Gagal mendapatkan bahan baku.');
     }
 
-    return result.rows.map; // fix map to model ingredient
+    return result.rows;
   }
 
   async getIngredientById(ingredientId) {

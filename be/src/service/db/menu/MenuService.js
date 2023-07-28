@@ -22,7 +22,6 @@ class MenuService {
     return result.rows[0].id;
   }
 
-  // need to fix
   async getMenu() {
     const result = await this._pool.query(`
             SELECT 
@@ -38,10 +37,9 @@ class MenuService {
       throw new Error('Gagal mendapatkan menu.');
     }
 
-    return result.rows.map; // fix map to model menu
+    return result.rows;
   }
 
-  // need to fix
   async getMenuById(menuId) {
     const query = {
       text: `
@@ -63,7 +61,7 @@ class MenuService {
       throw new Error('Gagal mendapatkan menu, Id tidak ditemukan.');
     }
 
-    return result.rows.map; // fix map to model menu
+    return result.rows;
   }
 
   async putMenuById(menuId, { name, price, categoryId }) {

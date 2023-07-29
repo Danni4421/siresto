@@ -1,3 +1,4 @@
+const InvariantError = require('../../exceptions/client/InvariantError');
 const ChefsPayloadSchema = require('./schema');
 
 const ChefsValidator = {
@@ -5,7 +6,7 @@ const ChefsValidator = {
     const validationResult = ChefsPayloadSchema.validate(payload);
 
     if (validationResult.error) {
-      throw new Error(validationResult.error.message);
+      throw new InvariantError(validationResult.error.message);
     }
   },
 };

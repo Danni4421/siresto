@@ -1,3 +1,4 @@
+const InvariantError = require('../../exceptions/client/InvariantError');
 const CategoriesPayloadSchema = require('./schema');
 
 const CategoriesValidator = {
@@ -5,7 +6,7 @@ const CategoriesValidator = {
     const validationResult = CategoriesPayloadSchema.validate(payload);
 
     if (validationResult.error) {
-      throw new Error(validationResult.error.message);
+      throw new InvariantError(validationResult.error.message);
     }
   },
 };

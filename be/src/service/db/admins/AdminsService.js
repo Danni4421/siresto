@@ -1,5 +1,7 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
+const InvariantError = require('../../../exceptions/client/InvariantError');
+const NotFoundError = require('../../../exceptions/client/NotFoundError');
 
 class AdminsService {
   constructor() {
@@ -16,7 +18,7 @@ class AdminsService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal menambahkan admin.');
+      throw new InvariantError('Gagal menambahkan admin.');
     }
 
     return result.rows[0].id;
@@ -31,7 +33,7 @@ class AdminsService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal menghapus admin, Id tidak ditemukan.');
+      throw new NotFoundError('Gagal menghapus admin, Id tidak ditemukan.');
     }
   }
 

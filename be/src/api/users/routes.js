@@ -20,6 +20,11 @@ const routes = (handler) => [
     handler: handler.putUserByIdHandler,
   },
   {
+    method: 'PUT',
+    path: '/users/password/{id}',
+    handler: handler.putPasswordUserByIdHandler,
+  },
+  {
     method: 'DELETE',
     path: '/users/{id}',
     handler: handler.deleteUserByIdHandler,

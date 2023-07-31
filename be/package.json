@@ -12,10 +12,11 @@
   "license": "ISC",
   "dependencies": {
     "@hapi/hapi": "^21.3.2",
+    "auto-bind": "4",
     "bcrypt": "^5.1.0",
     "dotenv": "^16.3.1",
     "joi": "^17.9.2",
-    "nanoid": "^4.0.2",
+    "nanoid": "3.1.20",
     "node-pg-migrate": "^6.2.2",
     "nodemon": "^3.0.1",
     "pg": "^8.11.1"

@@ -7,6 +7,7 @@ const ErrorHandler = (server) => {
   server.ext('onPreResponse', (request, h) => {
     const { response } = request;
     if (response instanceof Error) {
+      console.log({ error: response.output, message: response.message });
       if (response instanceof ClientError) {
         if (response instanceof InvariantError) {
           const invariantError = h.response({

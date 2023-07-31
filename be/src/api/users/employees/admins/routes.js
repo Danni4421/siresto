@@ -2,12 +2,12 @@ const routes = (handler) => [
   {
     method: 'POST',
     path: '/admins',
-    handler: handler.postManagerHandler,
+    handler: handler.postAdminsHandler,
   },
   {
     method: 'DELETE',
     path: '/admins/{id}',
-    handler: handler.deleteManagerByIdHandler,
+    handler: handler.deleteAdminByIdHandler,
   },
 ];
 

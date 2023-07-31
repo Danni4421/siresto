@@ -16,7 +16,7 @@ exports.up = (pgm) => {
   pgm.addConstraint(
     'admins',
     'fk_admins.employee_id_employees.id',
-    'FOREIGN KEY (employee_id) REFERENCES employees (id)'
+    'FOREIGN KEY (employee_id) REFERENCES employees (id) ON DELETE CASCADE'
   );
 };
 

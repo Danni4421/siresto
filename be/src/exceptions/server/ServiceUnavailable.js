@@ -1,3 +1,5 @@
+const InternalServerError = require('./InternalServerError');
+
 class ServiceUnavailable extends InternalServerError {
   constructor(message) {
     super(message, 503);

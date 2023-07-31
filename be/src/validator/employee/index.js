@@ -1,9 +1,9 @@
 const InvariantError = require('../../exceptions/client/InvariantError');
-const EmployeePayloadSchema = require('./schema');
+const PostEmployeePayloadSchema = require('./schema');
 
-const EmployeeValidator = {
+const EmployeesValidator = {
   validatePostEmployeePayload: (payload) => {
-    const validationResult = EmployeePayloadSchema.validate(payload);
+    const validationResult = PostEmployeePayloadSchema.validate(payload);
 
     if (validationResult.error) {
       throw new InvariantError(validationResult.error.message);
@@ -11,4 +11,4 @@ const EmployeeValidator = {
   },
 };
 
-module.exports = EmployeeValidator;
+module.exports = EmployeesValidator;

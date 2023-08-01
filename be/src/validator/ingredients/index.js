@@ -1,9 +1,20 @@
 const InvariantError = require('../../exceptions/client/InvariantError');
-const IngredientPayloadSchema = require('./schema');
+const {
+  PostIngredientPayloadSchema,
+  PutIngredientPayloadSchema,
+} = require('./schema');
 
 const IngredientsValidator = {
   validatePostIngredientPayload: (payload) => {
-    const validationResult = IngredientPayloadSchema.validate(payload);
+    const validationResult = PostIngredientPayloadSchema.validate(payload);
+
+    if (validationResult.error) {
+      throw new InvariantError(validationResult.error.message);
+    }
+  },
+
+  validatePutIngredientPayload: (payload) => {
+    const validationResult = PutIngredientPayloadSchema.validate(payload);
 
     if (validationResult.error) {
       throw new InvariantError(validationResult.error.message);

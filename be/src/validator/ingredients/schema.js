@@ -1,10 +1,17 @@
 const Joi = require('joi');
 
-const IngredientPayloadSchema = Joi.object({
+const PostIngredientPayloadSchema = Joi.object({
   name: Joi.string().required(),
-  price: Joi.number().required(),
-  stock: Joi.number().required(),
+  price: Joi.number().strict().required(),
+  stock: Joi.number().strict().required(),
   unit: Joi.string().required(),
 });
 
-module.exports = IngredientPayloadSchema;
+const PutIngredientPayloadSchema = Joi.object({
+  name: Joi.string().required(),
+  price: Joi.number().strict().required(),
+  stock: Joi.number().strict().required(),
+  unit: Joi.string().required(),
+});
+
+module.exports = { PostIngredientPayloadSchema, PutIngredientPayloadSchema };

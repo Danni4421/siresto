@@ -14,11 +14,26 @@ const admins = require('./api/users/employees/admins');
 const AdminsService = require('./service/db/admins/AdminsService');
 const AdminsValidator = require('./validator/admins');
 
+const categories = require('./api/products/categories');
+const CategoriesService = require('./service/db/categories/CategoriesService');
+const CategoriesValidator = require('./validator/categories');
+
+const menu = require('./api/products/menu');
+const MenuService = require('./service/db/menu/MenuService');
+const MenuValidator = require('./validator/menu');
+
+const ingredients = require('./api/ingredients');
+const IngredientsService = require('./service/db/ingredients/IngredientsService');
+const IngredientsValidator = require('./validator/ingredients');
+
 const register = async (server) => {
   const usersService = new UsersService();
   const employeesService = new EmployeesService();
   const chefsService = new ChefsService();
   const adminsService = new AdminsService();
+  const categoriesService = new CategoriesService();
+  const menuService = new MenuService();
+  const ingredientsService = new IngredientsService();
 
   await server.register([
     {
@@ -47,6 +62,27 @@ const register = async (server) => {
       options: {
         service: adminsService,
         validator: AdminsValidator,
+      },
+    },
+    {
+      plugin: categories,
+      options: {
+        service: categoriesService,
+        validator: CategoriesValidator,
+      },
+    },
+    {
+      plugin: menu,
+      options: {
+        service: menuService,
+        validator: MenuValidator,
+      },
+    },
+    {
+      plugin: ingredients,
+      options: {
+        service: ingredientsService,
+        validator: IngredientsValidator,
       },
     },
   ]);

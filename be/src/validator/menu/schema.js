@@ -1,9 +1,15 @@
 const Joi = require('joi');
 
-const MenuPayloadSchema = Joi.object({
+const PostMenuPayloadSchema = Joi.object({
   name: Joi.string().required(),
   price: Joi.number().min(1).required(),
   categoryId: Joi.string().required(),
 });
 
-module.exports = MenuPayloadSchema;
+const PutMenuPayloadSchema = Joi.object({
+  name: Joi.string().required(),
+  price: Joi.number().min(1).required(),
+  categoryId: Joi.string().required(),
+});
+
+module.exports = { PostMenuPayloadSchema, PutMenuPayloadSchema };

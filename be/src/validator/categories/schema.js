@@ -1,7 +1,23 @@
 const Joi = require('joi');
 
-const CategoriesPayloadSchema = Joi.object({
+const PostCategoriesPayloadSchema = Joi.object({
   name: Joi.string().min(1).required(),
 });
 
-module.exports = CategoriesPayloadSchema;
+const PutCategoriesPayloadSchema = Joi.object({
+  name: Joi.string()
+    .valid(
+      'Appetizers',
+      'Main dishes',
+      'Side dishes',
+      'Salad',
+      'Sup',
+      'Sandwiches',
+      'Desserts',
+      'Drink',
+      'Special'
+    )
+    .required(),
+});
+
+module.exports = { PostCategoriesPayloadSchema, PutCategoriesPayloadSchema };

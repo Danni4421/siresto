@@ -1,12 +1,14 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
+const InvariantError = require('../../../exceptions/client/InvariantError');
+const NotFoundError = require('../../../exceptions/client/NotFoundError');
 
 class MenuIngredientsService {
   constructor() {
     this._pool = new Pool();
   }
 
-  async addMenuIngredient({ menuId, ingredientId, qty }) {
+  async addMenuIngredients({ menuId, ingredientId, qty }) {
     const id = `mi-${nanoid(16)}`;
     const query = {
       text: 'INSERT INTO menu_ingredients VALUES ($1, $2, $3, $4) RETURNING id',
@@ -16,8 +18,34 @@ class MenuIngredientsService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal menambahkan bahan baku menu.');
+      throw new InvariantError('Gagal menambahkan bahan baku menu.');
     }
+
+    return result.rows[0].id;
+  }
+
+  async getMenuIngredients(menuId) {
+    const query = {
+      text: `
+        SELECT 
+          i.id,
+          i.name,
+          mi.qty,
+          i.ms_unit
+          FROM menu_ingredients mi
+            LEFT JOIN ingredients i ON i.id = mi.ingredient_id
+            WHERE mi.menu_id = $1
+      `,
+      values: [menuId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      throw new NotFoundError('Gagal mendapatkan bahan baku menu.');
+    }
+
+    return result.rows;
   }
 
   async deleteMenuIngredient(menuId, ingredientId) {
@@ -29,7 +57,7 @@ class MenuIngredientsService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal menghapus bahan baku menu.');
+      throw new NotFoundError('Gagal menghapus bahan baku menu.');
     }
   }
 }

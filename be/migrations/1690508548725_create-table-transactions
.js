@@ -14,8 +14,16 @@ exports.up = (pgm) => {
       type: 'VARCHAR(50)',
       notNull: true,
     },
+    transaction_date: {
+      type: 'DATE',
+      notNull: true,
+    },
     qty: {
       type: 'INT',
+      notNull: true,
+    },
+    transaction_status: {
+      type: 'TEXT',
       notNull: true,
     },
   });

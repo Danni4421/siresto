@@ -1,9 +1,9 @@
 const InvariantError = require('../../exceptions/client/InvariantError');
-const TransactionsPayloadSchema = require('./schema');
+const { PostTransactionsPayloadSchema } = require('./schema');
 
 const TransactionsValidator = {
-  validatePostTransactionPayload: (payload) => {
-    const validationResult = TransactionsPayloadSchema.validate(payload);
+  validatePostTransactionsPayload: (payload) => {
+    const validationResult = PostTransactionsPayloadSchema.validate(payload);
 
     if (validationResult.error) {
       throw new InvariantError(validationResult.error.message);

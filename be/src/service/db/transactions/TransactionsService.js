@@ -1,22 +1,25 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 
+const InvariantError = require('../../../exceptions/client/InvariantError');
+const NotFoundError = require('../../../exceptions/client/NotFoundError');
+
 class TransactionsService {
   constructor() {
     this._pool = new Pool();
   }
 
-  async addTransactions(userId, { menuId, qty }) {
+  async addTransactions(userId, { menuId, date, qty, status }) {
     const id = `transaction-${nanoid(16)}`;
     const query = {
-      text: 'INSERT INTO transactions VALUES ($1, $2, $3, $4) RETURNING id',
-      values: [id, userId, menuId, qty],
+      text: 'INSERT INTO transactions VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      values: [id, userId, menuId, date, qty, status],
     };
 
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal menambahkan transaksi.');
+      throw new InvariantError('Gagal menambahkan transaksi.');
     }
   }
 
@@ -36,16 +39,16 @@ class TransactionsService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal mendapatkan transaksi user.');
+      throw new NotFoundError('Gagal mendapatkan transaksi user.');
     }
 
     return result.rows;
   }
 
-  async deleteTransactions(userId, menuId) {
+  async deleteTransactionById(transactionId, userId) {
     const query = {
-      text: 'DELETE FROM transactions WHERE user_id = $1 AND menu_id = $2 RETURNING id',
-      values: [userId, menuId],
+      text: 'DELETE FROM transactions WHERE id = $1 AND user_id = $2 RETURNING id',
+      values: [transactionId, userId],
     };
 
     const result = await this._pool.query(query);

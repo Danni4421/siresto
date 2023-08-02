@@ -1,8 +1,10 @@
 const Joi = require('joi');
 
-const TransactionsPayloadSchema = Joi.object({
+const PostTransactionsPayloadSchema = Joi.object({
   menuId: Joi.string().required(),
-  qty: Joi.number().min(1).required(),
+  date: Joi.date().required(),
+  qty: Joi.number().strict().min(1).required(),
+  status: Joi.string().required(),
 });
 
-module.exports = TransactionsPayloadSchema;
+module.exports = { PostTransactionsPayloadSchema };

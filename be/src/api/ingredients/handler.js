@@ -11,7 +11,6 @@ class IngredientsHandler {
   async postIngredientsHandler(request, h) {
     this._validator.validatePostIngredientPayload(request.payload);
     const ingredientId = await this._service.addIngredients(request.payload);
-    console.log(ingredientId);
     const response = h.response({
       status: 'success',
       message: 'Berhasil menambahkan bahan baku.',

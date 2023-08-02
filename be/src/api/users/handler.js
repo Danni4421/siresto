@@ -49,7 +49,7 @@ class UsersHandler {
   }
 
   async putUserByIdHandler(request, h) {
-    this._validator.validatePutUsserPayload(request.payload);
+    this._validator.validatePutUserPayload(request.payload);
 
     const { id: userId } = request.params;
     await this._service.putUserById(userId, request.payload);

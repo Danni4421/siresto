@@ -26,6 +26,14 @@ const ingredients = require('./api/ingredients');
 const IngredientsService = require('./service/db/ingredients/IngredientsService');
 const IngredientsValidator = require('./validator/ingredients');
 
+const menu_ingredients = require('./api/ingredients/menu_ingredients');
+const MenuIngredientsService = require('./service/db/menuIngredients/MenuIngredientsService');
+const MenuIngredientsValidator = require('./validator/menu-ingredients');
+
+const transactions = require('./api/transactions');
+const TransactionsService = require('./service/db/transactions/TransactionsService');
+const TransactionsValidator = require('./validator/transactions');
+
 const register = async (server) => {
   const usersService = new UsersService();
   const employeesService = new EmployeesService();
@@ -34,6 +42,8 @@ const register = async (server) => {
   const categoriesService = new CategoriesService();
   const menuService = new MenuService();
   const ingredientsService = new IngredientsService();
+  const menuIngredientsService = new MenuIngredientsService();
+  const transactionsService = new TransactionsService();
 
   await server.register([
     {
@@ -83,6 +93,20 @@ const register = async (server) => {
       options: {
         service: ingredientsService,
         validator: IngredientsValidator,
+      },
+    },
+    {
+      plugin: menu_ingredients,
+      options: {
+        service: menuIngredientsService,
+        validator: MenuIngredientsValidator,
+      },
+    },
+    {
+      plugin: transactions,
+      options: {
+        service: transactionsService,
+        validator: TransactionsValidator,
       },
     },
   ]);

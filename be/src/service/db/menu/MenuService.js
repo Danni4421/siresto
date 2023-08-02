@@ -1,5 +1,7 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
+const NotFoundError = require('../../../exceptions/client/NotFoundError');
+const InvariantError = require('../../../exceptions/client/InvariantError');
 
 class MenuService {
   constructor() {
@@ -16,7 +18,7 @@ class MenuService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal menambahkan menu.');
+      throw new InvariantError('Gagal menambahkan menu.');
     }
 
     return result.rows[0].id;
@@ -34,7 +36,7 @@ class MenuService {
         `);
 
     if (!result.rowCount) {
-      throw new Error('Gagal mendapatkan menu.');
+      throw new NotFoundError('Gagal mendapatkan menu.');
     }
 
     return result.rows;
@@ -47,7 +49,7 @@ class MenuService {
                 m.id,
                 m.name,
                 m.price,
-                c.name
+                c.name AS category_name
             FROM menu m
                 LEFT JOIN categories c ON c.id = m.category_id
                 WHERE m.id = $1
@@ -58,10 +60,10 @@ class MenuService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal mendapatkan menu, Id tidak ditemukan.');
+      throw new NotFoundError('Gagal mendapatkan menu, Id tidak ditemukan.');
     }
 
-    return result.rows;
+    return result.rows[0];
   }
 
   async putMenuById(menuId, { name, price, categoryId }) {
@@ -79,7 +81,7 @@ class MenuService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal memperbarui menu, Id tidak ditemukan');
+      throw new NotFoundError('Gagal memperbarui menu, Id tidak ditemukan');
     }
   }
 
@@ -92,7 +94,7 @@ class MenuService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal menghapus menu, Id tidak ditemukan.');
+      throw new NotFoundError('Gagal menghapus menu, Id tidak ditemukan.');
     }
   }
 }

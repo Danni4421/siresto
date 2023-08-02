@@ -2,6 +2,7 @@ require('dotenv').config();
 const Hapi = require('@hapi/hapi');
 const config = require('./config');
 const register = require('./plugin');
+const ErrorHandler = require('./error-handling');
 
 const init = async () => {
   const server = Hapi.server({
@@ -15,6 +16,7 @@ const init = async () => {
   });
 
   await register(server);
+  ErrorHandler(server);
 
   await server.start();
   console.log(`Server berjalan pada ${server.info.uri}`);

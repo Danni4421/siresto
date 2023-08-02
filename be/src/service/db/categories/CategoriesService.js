@@ -1,5 +1,7 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
+const NotFoundError = require('../../../exceptions/client/NotFoundError');
+const InvariantError = require('../../../exceptions/client/InvariantError');
 
 class CategoriesService {
   constructor() {
@@ -16,7 +18,7 @@ class CategoriesService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal menambahkan kategori.');
+      throw new InvariantError('Gagal menambahkan kategori.');
     }
 
     return result.rows[0].id;
@@ -28,7 +30,7 @@ class CategoriesService {
         `);
 
     if (!result.rowCount) {
-      throw new Error('Gagal mendapatkan kategori.');
+      throw new NotFoundError('Gagal mendapatkan kategori.');
     }
 
     return result.rows;
@@ -43,7 +45,9 @@ class CategoriesService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal memperbarui kategori, Id tidak ditemukan.');
+      throw new NotFoundError(
+        'Gagal memperbarui kategori, Id tidak ditemukan.'
+      );
     }
   }
 
@@ -56,7 +60,7 @@ class CategoriesService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal menghapus kategori, Id tidak ditemukan.');
+      throw new NotFoundError('Gagal menghapus kategori, Id tidak ditemukan.');
     }
   }
 }

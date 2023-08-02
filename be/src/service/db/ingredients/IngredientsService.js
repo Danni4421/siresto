@@ -1,23 +1,27 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
+const InvariantError = require('../../../exceptions/client/InvariantError');
+const NotFoundError = require('../../../exceptions/client/NotFoundError');
 
 class IngredientsService {
   constructor() {
     this._pool = new Pool();
   }
 
-  async addIngredients({ name, price, stock, msUnit }) {
+  async addIngredients({ name, price, stock, unit }) {
     const id = `ingredient-${nanoid(16)}`;
     const query = {
       text: 'INSERT INTO ingredients VALUES ($1, $2, $3, $4, $5) RETURNING id',
-      values: [id, name, price, stock, msUnit],
+      values: [id, name, price, stock, unit],
     };
 
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal menambahkan bahan baku.');
+      throw new InvariantError('Gagal menambahkan bahan baku.');
     }
+
+    return result.rows[0].id;
   }
 
   async getIngredients() {
@@ -26,7 +30,7 @@ class IngredientsService {
     `);
 
     if (!result.rowCount) {
-      throw new Error('Gagal mendapatkan bahan baku.');
+      throw new NotFoundError('Gagal mendapatkan bahan baku.');
     }
 
     return result.rows;
@@ -41,11 +45,15 @@ class IngredientsService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal mendapatkan bahan baku, Id tidak ditemukan.');
+      throw new NotFoundError(
+        'Gagal mendapatkan bahan baku, Id tidak ditemukan.'
+      );
     }
+
+    return result.rows[0];
   }
 
-  async putIngredientById(ingredientId, { name, price, stock, msUnit }) {
+  async putIngredientById(ingredientId, { name, price, stock, unit }) {
     const query = {
       text: `
             UPDATE ingredients SET
@@ -55,13 +63,15 @@ class IngredientsService {
             ms_unit = $4
             WHERE id = $5
         `,
-      values: [name, price, stock, msUnit, ingredientId],
+      values: [name, price, stock, unit, ingredientId],
     };
 
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal memperbarui bahan baku, Id tidak ditemukan.');
+      throw new NotFoundError(
+        'Gagal memperbarui bahan baku, Id tidak ditemukan.'
+      );
     }
   }
 
@@ -74,7 +84,9 @@ class IngredientsService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal menghapus bahan baku, Id tidak ditemukan.');
+      throw new NotFoundError(
+        'Gagal menghapus bahan baku, Id tidak ditemukan.'
+      );
     }
   }
 }

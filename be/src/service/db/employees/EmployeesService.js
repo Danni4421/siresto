@@ -1,6 +1,8 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const MapEmployeesToModels = require('../../utils/map/employees');
+const NotFoundError = require('../../../exceptions/client/NotFoundError');
+const InvariantError = require('../../../exceptions/client/InvariantError');
 
 class EmployeesService {
   constructor() {
@@ -8,34 +10,58 @@ class EmployeesService {
   }
 
   async addEmployees({ userId, birthdate, ktpId }) {
-    const id = `employee-${nanoid(16)}`;
-    const query = {
-      text: 'INSERT INTO employees VALUES ($1, $2, $3, $4) RETURNING id',
-      values: [id, userId, birthdate, ktpId],
-    };
+    try {
+      const query = {
+        text: 'SELECT * FROM employees WHERE user_id = $1',
+        values: [userId],
+      };
 
-    const result = await this._pool.query(query);
+      const result = await this._pool.query(query);
 
-    if (!result.rowCount) {
-      throw new Error('Gagal menambahkan pegawai.');
+      if (!result.rowCount) {
+        throw new NotFoundError(
+          'Tidak terdapat pegawai. Anda dapat menambahkan Id menjadi pegawai.'
+        );
+      }
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        const id = `employee-${nanoid(16)}`;
+        const query = {
+          text: 'INSERT INTO employees VALUES ($1, $2, $3, $4) RETURNING id',
+          values: [id, userId, birthdate, ktpId],
+        };
+        Error;
+
+        const result = await this._pool.query(query);
+
+        if (!result.rowCount) {
+          throw new InvariantError('Gagal menambahkan pegawai.');
+        }
+
+        return result.rows[0].id;
+      }
     }
 
-    return result.rows[0].id;
+    throw new InvariantError(
+      'User Id yang Anda masukkan sudah terdaftar menjadi pegawai.'
+    );
   }
 
   async getEmployees() {
+    console.log('disini bisa');
+
     const result = await this._pool.query(
       `SELECT 
-            e.id,
-            u.username,
-            u.first_name,
-            u.last_name,
-            FROM employees e
-                LEFT JOIN users u ON u.id = e.user_id`
+      e.id,
+      u.username,
+      u.first_name,
+      u.last_name
+      FROM employees e
+      LEFT JOIN users u ON u.id = e.user_id`
     );
 
     if (!result.rowCount) {
-      throw new Error('Gagal mendapatkan pegawai.');
+      throw new NotFoundError('Gagal mendapatkan pegawai.');
     }
 
     return result.rows.map(MapEmployeesToModels);
@@ -61,7 +87,7 @@ class EmployeesService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal mendapatkan pegawai, Id tidak ditemukan.');
+      throw new NotFoundError('Gagal mendapatkan pegawai, Id tidak ditemukan.');
     }
 
     return result.rows.map(MapEmployeesToModels)[0];
@@ -76,7 +102,7 @@ class EmployeesService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal menghapus pegawai, Id tidak ditemukan.');
+      throw new NotFoundError('Gagal menghapus pegawai, Id tidak ditemukan.');
     }
   }
 

@@ -2,6 +2,7 @@ const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const bcrypt = require('bcrypt');
 const MapUsersToModels = require('../../utils/map/users');
+const NotFoundError = require('../../../exceptions/client/NotFoundError');
 
 class UsersService {
   constructor() {
@@ -9,7 +10,7 @@ class UsersService {
   }
 
   async addUsers({ username, firstName, lastName, password, email, address }) {
-    const id = `users-${nanoid(16)}`;
+    const id = `user-${nanoid(16)}`;
     const _username = `${+new Date()}-${username}`;
     const hashedPassword = await bcrypt.hash(password, 10);
     const createdAt = new Date().toISOString();
@@ -42,12 +43,12 @@ class UsersService {
   async getUsers() {
     const result = await this._pool.query(`
       SELECT 
-        (id, username, first_name, last_name, email, address)
+        id, username, first_name, last_name, email, address
         FROM users
     `);
 
     if (!result.rowCount) {
-      throw new Error('User tidak ditemukan.');
+      throw new NotFoundError('User tidak ditemukan.');
     }
 
     return result.rows.map(MapUsersToModels);
@@ -57,7 +58,7 @@ class UsersService {
     const query = {
       text: `
         SELECT 
-          (id, username, first_name, last_name, email, address)
+          id, username, first_name, last_name, email, address
           FROM users
           WHERE id = $1
       `,
@@ -67,7 +68,7 @@ class UsersService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal mendapatkan User, Id tidak ditemukan.');
+      throw new NotFoundError('Gagal mendapatkan User, Id tidak ditemukan.');
     }
 
     return result.rows.map(MapUsersToModels)[0];
@@ -100,7 +101,22 @@ class UsersService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal memperbarui User. Id tidak ditemukan.');
+      throw new NotFoundError('Gagal memperbarui User. Id tidak ditemukan.');
+    }
+  }
+
+  async putPasswordUserById(userId, updatedPassword) {
+    const query = {
+      text: 'UPDATE users SET password = $1 WHERE id = $2',
+      values: [updatedPassword, userId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      throw new NotFoundError(
+        'Gagal memperbarui password, Id tidak ditemukan.'
+      );
     }
   }
 
@@ -113,8 +129,26 @@ class UsersService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Gagal menghapus User, Id tidak ditemukan.');
+      throw new NotFoundError('Gagal menghapus User, Id tidak ditemukan.');
     }
+  }
+
+  async validateUserById(userId, { password }) {
+    const query = {
+      text: `SELECT password FROM users WHERE id = $1`,
+      values: [userId],
+    };
+
+    const result = await this._pool.query(query);
+    if (!result.rowCount) {
+      throw new NotFoundError('Validasi User gagal, Id tidak ditemukan.');
+    }
+
+    const { password: oldPassword } = result.rows[0];
+
+    const isMatch = bcrypt.compare(oldPassword, password);
+
+    return isMatch ? oldPassword : await bcrypt.hash(password, 10);
   }
 }
 

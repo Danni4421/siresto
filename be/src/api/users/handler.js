@@ -23,16 +23,15 @@ class UsersHandler {
     return response;
   }
 
-  async getUsersHandler(request, h) {
+  async getUsersHandler() {
     const users = await this._service.getUsers();
-    const response = h.response({
+    return {
       status: 'success',
       message: 'Berhasil mendapatkan User.',
       data: {
         users,
       },
-    });
-    return response;
+    };
   }
 
   async getUserByIdHandler(request, h) {
@@ -64,7 +63,7 @@ class UsersHandler {
     this._validator.validatePutPasswordPayload(request.payload);
 
     const { id: userId } = request.params;
-    const updatedPassword = await this._service.validateUserById(
+    const updatedPassword = await this._service.confirmPassword(
       userId,
       request.payload
     );

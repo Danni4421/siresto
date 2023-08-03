@@ -3,6 +3,7 @@ const Hapi = require('@hapi/hapi');
 const config = require('./config');
 const register = require('./plugin');
 const ErrorHandler = require('./error-handling');
+const addJwt = require('./auth');
 
 const init = async () => {
   const server = Hapi.server({
@@ -15,6 +16,7 @@ const init = async () => {
     },
   });
 
+  await addJwt(server);
   await register(server);
   ErrorHandler(server);
 

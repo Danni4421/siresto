@@ -34,6 +34,11 @@ const transactions = require('./api/transactions');
 const TransactionsService = require('./service/db/transactions/TransactionsService');
 const TransactionsValidator = require('./validator/transactions');
 
+const authentications = require('./api/authentications');
+const AuthenticationsService = require('./service/db/authentications/AuthenticationsService');
+const AuthenticationsValidator = require('./validator/authentications');
+const TokenManager = require('./tokenize/TokenManager');
+
 const register = async (server) => {
   const usersService = new UsersService();
   const employeesService = new EmployeesService();
@@ -44,6 +49,7 @@ const register = async (server) => {
   const ingredientsService = new IngredientsService();
   const menuIngredientsService = new MenuIngredientsService();
   const transactionsService = new TransactionsService();
+  const authenticationsService = new AuthenticationsService();
 
   await server.register([
     {
@@ -107,6 +113,15 @@ const register = async (server) => {
       options: {
         service: transactionsService,
         validator: TransactionsValidator,
+      },
+    },
+    {
+      plugin: authentications,
+      options: {
+        usersService,
+        authenticationsService,
+        tokenManager: TokenManager,
+        validator: AuthenticationsValidator,
       },
     },
   ]);

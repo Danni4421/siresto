@@ -3,6 +3,7 @@ const { nanoid } = require('nanoid');
 const bcrypt = require('bcrypt');
 const MapUsersToModels = require('../../utils/map/users');
 const NotFoundError = require('../../../exceptions/client/NotFoundError');
+const AuthenticationError = require('../../../exceptions/client/AuthenticationError');
 
 class UsersService {
   constructor() {
@@ -133,7 +134,7 @@ class UsersService {
     }
   }
 
-  async validateUserById(userId, { password }) {
+  async confirmPassword(userId, { password }) {
     const query = {
       text: `SELECT password FROM users WHERE id = $1`,
       values: [userId],
@@ -149,6 +150,32 @@ class UsersService {
     const isMatch = bcrypt.compare(oldPassword, password);
 
     return isMatch ? oldPassword : await bcrypt.hash(password, 10);
+  }
+
+  async verifyUser({ username, password }) {
+    const query = {
+      text: 'SELECT id,password FROM users WHERE username = $1',
+      values: [username],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      throw new NotFoundError('Gagal mendapatkan user, Id tidak ditemukan.');
+    }
+
+    const { id, password: hashedPassword } = result.rows[0];
+    console.log({ id, hashedPassword });
+
+    const isMatch = await bcrypt.compare(password, hashedPassword);
+
+    if (!isMatch) {
+      throw new AuthenticationError(
+        'Gagal melakukan verifikasi user, informasi yang dimasukkan salah.'
+      );
+    }
+
+    return id;
   }
 }
 

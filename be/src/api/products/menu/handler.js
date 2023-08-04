@@ -1,8 +1,9 @@
 const autoBind = require('auto-bind');
 
 class MenuHandler {
-  constructor(service, validator) {
-    this._service = service;
+  constructor(menuService, chefsService, validator) {
+    this._menuService = menuService;
+    this._chefsService = chefsService;
     this._validator = validator;
 
     autoBind(this);
@@ -10,7 +11,10 @@ class MenuHandler {
 
   async postMenuHandler(request, h) {
     this._validator.validatePostMenuPayload(request.payload);
-    const menuId = await this._service.addMenu(request.payload);
+    const { id: userId } = request.auth.credentials;
+
+    await this._chefsService.verifyChef(userId);
+    const menuId = await this._menuService.addMenu(request.payload);
     const response = h.response({
       status: 'success',
       message: 'Berhasil menambahkan menu.',
@@ -23,7 +27,7 @@ class MenuHandler {
   }
 
   async getMenuHandler() {
-    const menu = await this._service.getMenu();
+    const menu = await this._menuService.getMenu();
     return {
       status: 'success',
       message: 'Berhasil mendapatkan menu.',
@@ -35,7 +39,7 @@ class MenuHandler {
 
   async getMenuByIdHandler(request) {
     const { id: menuId } = request.params;
-    const menu = await this._service.getMenuById(menuId);
+    const menu = await this._menuService.getMenuById(menuId);
     return {
       status: 'success',
       message: 'Berhasil mendapatkan menu.',
@@ -47,8 +51,11 @@ class MenuHandler {
 
   async putMenuByIdHandler(request) {
     this._validator.validatePutMenuPayload(request.payload);
+    const { id: userId } = request.auth.credentials;
     const { id: menuId } = request.params;
-    await this._service.putMenuById(menuId, request.payload);
+
+    await this._chefsService.verifyChef(userId);
+    await this._menuService.putMenuById(menuId, request.payload);
 
     return {
       status: 'success',
@@ -57,8 +64,11 @@ class MenuHandler {
   }
 
   async deleteMenuByIdHandler(request) {
+    const { id: userId } = request.auth.credentials;
     const { id: menuId } = request.params;
-    await this._service.deleteMenuById(menuId);
+
+    await this._chefsService.verifyChef(userId);
+    await this._menuService.deleteMenuById(menuId);
     return {
       status: 'success',
       message: 'Berhasil menghapus menu.',

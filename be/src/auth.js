@@ -9,7 +9,7 @@ const addJwt = async (server) => {
     },
   ]);
 
-  server.auth.strategy('moneybox_jwt', 'jwt', {
+  server.auth.strategy('siresto_jwt', 'jwt', {
     keys: config.jwt.accessTokenKey,
     verify: {
       aud: false,
@@ -24,6 +24,8 @@ const addJwt = async (server) => {
       },
     }),
   });
+
+  // server.auth.strategy('super_user', 'jwt');
 };
 
 module.exports = addJwt;

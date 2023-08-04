@@ -83,35 +83,41 @@ const register = async (server) => {
     {
       plugin: categories,
       options: {
-        service: categoriesService,
+        categoriesService,
+        chefsService,
         validator: CategoriesValidator,
       },
     },
     {
       plugin: menu,
       options: {
-        service: menuService,
+        menuService,
+        chefsService,
         validator: MenuValidator,
       },
     },
     {
       plugin: ingredients,
       options: {
-        service: ingredientsService,
+        ingredientsService,
+        chefsService,
         validator: IngredientsValidator,
       },
     },
     {
       plugin: menu_ingredients,
       options: {
-        service: menuIngredientsService,
+        menuIngredientsService,
+        chefsService,
         validator: MenuIngredientsValidator,
       },
     },
     {
       plugin: transactions,
       options: {
-        service: transactionsService,
+        transactionsService,
+        menuIngredientsService,
+        ingredientsService,
         validator: TransactionsValidator,
       },
     },

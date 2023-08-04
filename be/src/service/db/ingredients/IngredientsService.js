@@ -57,10 +57,10 @@ class IngredientsService {
     const query = {
       text: `
             UPDATE ingredients SET
-            name = $1, 
-            price = $2, 
-            stock = $3,
-            ms_unit = $4
+              name = $1, 
+              price = $2, 
+              stock = $3,
+              ms_unit = $4
             WHERE id = $5
         `,
       values: [name, price, stock, unit, ingredientId],
@@ -88,6 +88,41 @@ class IngredientsService {
         'Gagal menghapus bahan baku, Id tidak ditemukan.'
       );
     }
+  }
+
+  async updateIngredientStock(ingredientId, updatedStock) {
+    const query = {
+      text: 'UPDATE ingredients SET stock = $1 WHERE id = $2',
+      values: [updatedStock, ingredientId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      throw new NotFoundError('Gagal memperbarui stock, Id tidak ditemukan.');
+    }
+  }
+
+  async verifyIngredientStock(ingredientId, neededStock) {
+    const query = {
+      text: 'SELECT name, stock FROM ingredients WHERE id = $1',
+      values: [ingredientId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      throw new NotFoundError('Gagal mendapatkan menu, Id tidak ditemukan.');
+    }
+
+    const { name, stock } = result.rows[0];
+
+    if (stock < neededStock) {
+      throw new InvariantError(`Bahan baku ${name} telah habis.`);
+    }
+
+    const updatedStock = stock - neededStock;
+    await this.updateIngredientStock(ingredientId, updatedStock);
   }
 }
 

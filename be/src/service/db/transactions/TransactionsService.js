@@ -21,6 +21,8 @@ class TransactionsService {
     if (!result.rowCount) {
       throw new InvariantError('Gagal menambahkan transaksi.');
     }
+
+    return result.rows[0].id;
   }
 
   async getTransactions(userId) {

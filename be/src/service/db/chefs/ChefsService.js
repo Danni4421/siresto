@@ -3,6 +3,7 @@ const { nanoid } = require('nanoid');
 
 const NotFoundError = require('../../../exceptions/client/NotFoundError');
 const InvariantError = require('../../../exceptions/client/InvariantError');
+const AuthorizationError = require('../../../exceptions/client/AuthorizationError');
 const MapChefsToModels = require('../../utils/map/chefs');
 
 class ChefsService {
@@ -36,7 +37,7 @@ class ChefsService {
         const result = await this._pool.query(query);
 
         if (!result.rowCount) {
-          throw new Error('Gagal menambahkan chef.');
+          throw new InvariantError('Gagal menambahkan chef.');
         }
 
         return result.rows[0].id;
@@ -82,16 +83,23 @@ class ChefsService {
     }
   }
 
-  async verifyChef(chefId) {
+  async verifyChef(userId) {
     const query = {
-      text: 'SELECT * FROM chefs WHERE id = $1',
-      values: [chefId],
+      text: `
+        SELECT 
+          c.id
+        FROM chefs c
+          LEFT JOIN employees e ON e.id = c.employee_id
+          LEFT JOIN users u ON u.id = e.user_id
+        WHERE u.id = $1
+      `,
+      values: [userId],
     };
 
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new Error('Validasi gagal, Pegawai bukan chef.');
+      throw new AuthorizationError('Validasi gagal, Anda bukan chef.');
     }
   }
 }

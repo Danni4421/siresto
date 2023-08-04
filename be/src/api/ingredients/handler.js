@@ -1,8 +1,9 @@
 const autoBind = require('auto-bind');
 
 class IngredientsHandler {
-  constructor(service, validator) {
-    this._service = service;
+  constructor(ingredientsService, chefsService, validator) {
+    this._ingredientsService = ingredientsService;
+    this._chefsService = chefsService;
     this._validator = validator;
 
     autoBind(this);
@@ -10,7 +11,12 @@ class IngredientsHandler {
 
   async postIngredientsHandler(request, h) {
     this._validator.validatePostIngredientPayload(request.payload);
-    const ingredientId = await this._service.addIngredients(request.payload);
+    const { id: userId } = request.auth.credentials;
+    await this._chefsService.verifyChef(userId);
+
+    const ingredientId = await this._ingredientsService.addIngredients(
+      request.payload
+    );
     const response = h.response({
       status: 'success',
       message: 'Berhasil menambahkan bahan baku.',
@@ -23,7 +29,7 @@ class IngredientsHandler {
   }
 
   async getIngredientsHandler() {
-    const ingredients = await this._service.getIngredients();
+    const ingredients = await this._ingredientsService.getIngredients();
     return {
       status: 'success',
       message: 'Berhasil mendapatkan bahan baku.',
@@ -35,7 +41,9 @@ class IngredientsHandler {
 
   async getIngredientByIdHandler(request) {
     const { id: ingredientId } = request.params;
-    const ingredient = await this._service.getIngredientById(ingredientId);
+    const ingredient = await this._ingredientsService.getIngredientById(
+      ingredientId
+    );
     return {
       status: 'success',
       message: 'Berhasil mendapatkan bahan baku.',
@@ -47,8 +55,14 @@ class IngredientsHandler {
 
   async putIngredientByIdHandler(request) {
     this._validator.validatePutIngredientPayload(request.payload);
+    const { id: userId } = request.auth.credentials;
+    await this._chefsService.verifyChef(userId);
+
     const { id: ingredientId } = request.params;
-    await this._service.putIngredientById(ingredientId, request.payload);
+    await this._ingredientsService.putIngredientById(
+      ingredientId,
+      request.payload
+    );
     return {
       status: 'success',
       message: 'Berhasil memperbarui bahan baku.',
@@ -56,8 +70,11 @@ class IngredientsHandler {
   }
 
   async deleteIngredientByIdHandler(request) {
+    const { id: userId } = request.auth.credentials;
+    await this._chefsService.verifyChef(userId);
+
     const { id: ingredientId } = request.params;
-    await this._service.deleteIngredientById(ingredientId);
+    await this._ingredientsService.deleteIngredientById(ingredientId);
     return {
       status: 'success',
       message: 'Berhasil menghapus bahan baku.',

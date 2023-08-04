@@ -4,8 +4,8 @@ const routes = require('./routes');
 module.exports = {
   name: 'menu',
   version: '1.0.0',
-  register: async (server, { service, validator }) => {
-    const menuHandler = new MenuHandler(service, validator);
+  register: async (server, { menuService, chefsService, validator }) => {
+    const menuHandler = new MenuHandler(menuService, chefsService, validator);
     server.route(routes(menuHandler));
   },
 };

@@ -1,8 +1,16 @@
 const autoBind = require('auto-bind');
+const InvariantError = require('../../exceptions/client/InvariantError');
 
 class TransactionsHandler {
-  constructor(service, validator) {
-    this._service = service;
+  constructor(
+    transactionsService,
+    menuIngredientsService,
+    ingredientsService,
+    validator
+  ) {
+    this._transactionsService = transactionsService;
+    this._menuIngredientsService = menuIngredientsService;
+    this._ingredientsService = ingredientsService;
     this._validator = validator;
 
     autoBind(this);
@@ -10,11 +18,33 @@ class TransactionsHandler {
 
   async postTransactionsHandler(request, h) {
     this._validator.validatePostTransactionsPayload(request.payload);
-    const userId = 'user-BW5AMEB-71SB9W78';
-    const transactionId = await this._service.addTransactions(
+    const { id: userId } = request.auth.credentials;
+    const { menuId, qty } = request.payload;
+
+    const menuIngredients =
+      await this._menuIngredientsService.getMenuIngredients(menuId);
+
+    try {
+      await Promise.all(
+        menuIngredients.map(async (i) => {
+          const neededStock = i.qty * qty;
+          await this._ingredientsService.verifyIngredientStock(
+            i.id,
+            neededStock
+          );
+        })
+      );
+    } catch (error) {
+      if (error instanceof InvariantError) {
+        throw error;
+      }
+    }
+
+    const transactionId = await this._transactionsService.addTransactions(
       userId,
       request.payload
     );
+
     const response = h.response({
       status: 'success',
       message: 'Berhasil menambahkan transaksi.',
@@ -27,8 +57,10 @@ class TransactionsHandler {
   }
 
   async getTransactionsUserHandler(request) {
-    const { userId } = request.params;
-    const userTransactions = await this._service.getTransactions(userId);
+    const { id: userId } = request.auth.credentials;
+    const userTransactions = await this._transactionsService.getTransactions(
+      userId
+    );
     return {
       status: 'success',
       message: 'Berhasil mendapatkan transaksi.',
@@ -40,7 +72,10 @@ class TransactionsHandler {
 
   async deleteTransactionsUserHandler(request) {
     const { transactionId, userId } = request.params;
-    await this._service.deleteTransactionById(transactionId, userId);
+    await this._transactionsService.deleteTransactionById(
+      transactionId,
+      userId
+    );
     return {
       status: 'success',
       message: 'Berhasil menghapus transaksi.',

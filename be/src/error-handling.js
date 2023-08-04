@@ -1,6 +1,7 @@
 const ClientError = require('./exceptions/client/ClientError');
 const InvariantError = require('./exceptions/client/InvariantError');
 const NotFoundError = require('./exceptions/client/NotFoundError');
+const AuthenticationsError = require('./exceptions/client/AuthenticationError');
 const ServiceUnavailable = require('./exceptions/server/ServiceUnavailable');
 
 const ErrorHandler = (server) => {
@@ -25,6 +26,15 @@ const ErrorHandler = (server) => {
           });
           notFoundError.code(response.statusCode);
           return notFoundError;
+        }
+
+        if (response instanceof AuthenticationsError) {
+          const authError = h.response({
+            status: 'fail',
+            message: response.message,
+          });
+          authError.code(response.statusCode);
+          return authError;
         }
 
         const clientError = h.response({

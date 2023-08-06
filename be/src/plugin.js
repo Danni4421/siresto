@@ -1,3 +1,6 @@
+const inert = require('@hapi/inert');
+const path = require('path');
+
 const users = require('./api/users');
 const UsersService = require('./service/db/users/UsersService');
 const UsersValidator = require('./validator/users');
@@ -39,6 +42,13 @@ const AuthenticationsService = require('./service/db/authentications/Authenticat
 const AuthenticationsValidator = require('./validator/authentications');
 const TokenManager = require('./tokenize/TokenManager');
 
+const superadmins = require('./api/authentications/super_admins');
+const SuperAdminsService = require('./service/db/super_admins/SuperAdminsService');
+const SuperAdminsValidator = require('./validator/super_admins');
+const SuperAdminTokenManager = require('./tokenize/SuperAdminTokenManager');
+
+const StorageService = require('./service/storage/StorageService');
+
 const register = async (server) => {
   const usersService = new UsersService();
   const employeesService = new EmployeesService();
@@ -50,8 +60,15 @@ const register = async (server) => {
   const menuIngredientsService = new MenuIngredientsService();
   const transactionsService = new TransactionsService();
   const authenticationsService = new AuthenticationsService();
+  const superAdminsService = new SuperAdminsService();
+  const storageService = new StorageService(
+    path.resolve(__dirname, 'api/products/menu/covers/img')
+  );
 
   await server.register([
+    {
+      plugin: inert,
+    },
     {
       plugin: users,
       options: {
@@ -63,6 +80,8 @@ const register = async (server) => {
       plugin: employees,
       options: {
         service: employeesService,
+        adminsService,
+        superAdminsService,
         validator: EmployeesValidator,
       },
     },
@@ -70,6 +89,8 @@ const register = async (server) => {
       plugin: chefs,
       options: {
         service: chefsService,
+        adminsService,
+        superAdminsService,
         validator: ChefsValidator,
       },
     },
@@ -77,6 +98,7 @@ const register = async (server) => {
       plugin: admins,
       options: {
         service: adminsService,
+        superAdminsService,
         validator: AdminsValidator,
       },
     },
@@ -93,6 +115,7 @@ const register = async (server) => {
       options: {
         menuService,
         chefsService,
+        storageService,
         validator: MenuValidator,
       },
     },
@@ -128,6 +151,16 @@ const register = async (server) => {
         authenticationsService,
         tokenManager: TokenManager,
         validator: AuthenticationsValidator,
+      },
+    },
+    {
+      plugin: superadmins,
+      options: {
+        service: superAdminsService,
+        tokenManager: SuperAdminTokenManager,
+        authenticationsService,
+        validator: SuperAdminsValidator,
+        AuthenticationsValidator,
       },
     },
   ]);

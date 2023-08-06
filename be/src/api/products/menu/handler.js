@@ -1,9 +1,10 @@
 const autoBind = require('auto-bind');
 
 class MenuHandler {
-  constructor(menuService, chefsService, validator) {
+  constructor(menuService, chefsService, storageService, validator) {
     this._menuService = menuService;
     this._chefsService = chefsService;
+    this._storageService = storageService;
     this._validator = validator;
 
     autoBind(this);
@@ -21,6 +22,25 @@ class MenuHandler {
       data: {
         menuId,
       },
+    });
+    response.code(201);
+    return response;
+  }
+
+  async postMenuCoverHandler(request, h) {
+    const { img } = request.payload;
+    const { id: menuId } = request.params;
+    const { id: chefId } = request.auth.credentials;
+    this._validator.validateMenuCoverHeaderPayload(img.hapi.headers);
+
+    const filename = await this._storageService.writeFile(img, img.hapi);
+
+    await this._chefsService.verifyChef(chefId);
+    await this._menuService.addMenuCover(filename, menuId);
+
+    const response = h.response({
+      status: 'success',
+      message: 'Berhasil menambahkan cover.',
     });
     response.code(201);
     return response;

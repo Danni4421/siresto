@@ -3,12 +3,12 @@ const InvariantError = require('./exceptions/client/InvariantError');
 const NotFoundError = require('./exceptions/client/NotFoundError');
 const AuthenticationsError = require('./exceptions/client/AuthenticationError');
 const ServiceUnavailable = require('./exceptions/server/ServiceUnavailable');
+const AuthorizationError = require('./exceptions/client/AuthorizationError');
 
 const ErrorHandler = (server) => {
   server.ext('onPreResponse', (request, h) => {
     const { response } = request;
     if (response instanceof Error) {
-      console.log({ error: response.output, message: response.message });
       if (response instanceof ClientError) {
         if (response instanceof InvariantError) {
           const invariantError = h.response({
@@ -35,6 +35,15 @@ const ErrorHandler = (server) => {
           });
           authError.code(response.statusCode);
           return authError;
+        }
+
+        if (response instanceof AuthorizationError) {
+          const authtorizationError = h.response({
+            status: 'fail',
+            message: response.message,
+          });
+          authtorizationError.code(response.statusCode);
+          return authtorizationError;
         }
 
         const clientError = h.response({

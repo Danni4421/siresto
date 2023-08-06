@@ -25,7 +25,21 @@ const addJwt = async (server) => {
     }),
   });
 
-  // server.auth.strategy('super_user', 'jwt');
+  server.auth.strategy('superadmin_jwt', 'jwt', {
+    keys: config.superadmin_jwt.accessTokenKey,
+    verify: {
+      aud: false,
+      iss: false,
+      sub: false,
+      maxAgeSec: config.superadmin_jwt.maxAge,
+    },
+    validate: (artifacts) => ({
+      isValid: true,
+      credentials: {
+        id: artifacts.decoded.payload.id,
+      },
+    }),
+  });
 };
 
 module.exports = addJwt;

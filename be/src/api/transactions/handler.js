@@ -71,7 +71,8 @@ class TransactionsHandler {
   }
 
   async deleteTransactionsUserHandler(request) {
-    const { transactionId, userId } = request.params;
+    const { id: userId } = request.auth.credentials;
+    const { transactionId } = request.params;
     await this._transactionsService.deleteTransactionById(
       transactionId,
       userId

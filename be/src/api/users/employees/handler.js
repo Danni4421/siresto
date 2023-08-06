@@ -1,8 +1,10 @@
 const autoBind = require('auto-bind');
 
 class EmployeesHandler {
-  constructor(service, validator) {
+  constructor(service, adminsService, superAdminsService, validator) {
     this._service = service;
+    this._adminsService = adminsService;
+    this._superAdminsService = superAdminsService;
     this._validator = validator;
 
     autoBind(this);
@@ -10,6 +12,9 @@ class EmployeesHandler {
 
   async postEmployeesHandler(request, h) {
     this._validator.validatePostEmployeePayload(request.payload);
+    const { id } = request.auth.credentials;
+    await this._superAdminsService.validateSuperAdmin({ id });
+
     const employeeId = await this._service.addEmployees(request.payload);
     const response = h.response({
       status: 'success',
@@ -55,6 +60,22 @@ class EmployeesHandler {
       message: 'Berhasil menghapus pegawai.',
     });
     return response;
+  }
+
+  async verifyAccess({ id }) {
+    try {
+      await this._adminsService.verifyAdmin({ id });
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        try {
+          await this._superAdminsService.validateSuperAdmin({ id });
+        } catch {
+          throw error;
+        }
+      } else {
+        throw error;
+      }
+    }
   }
 }
 

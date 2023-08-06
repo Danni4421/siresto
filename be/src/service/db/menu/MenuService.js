@@ -1,5 +1,6 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
+const config = require('../../../config');
 const NotFoundError = require('../../../exceptions/client/NotFoundError');
 const InvariantError = require('../../../exceptions/client/InvariantError');
 
@@ -8,11 +9,11 @@ class MenuService {
     this._pool = new Pool();
   }
 
-  async addMenu({ name, price, categoryId }) {
+  async addMenu({ name, price, categoryId, coverUrl }) {
     const id = `menu-${nanoid(16)}`;
     const query = {
-      text: 'INSERT INTO menu VALUES ($1, $2, $3, $4) RETURNING id',
-      values: [id, name, price, categoryId],
+      text: 'INSERT INTO menu VALUES ($1, $2, $3, $4, $5) RETURNING id',
+      values: [id, name, price, categoryId, coverUrl],
     };
 
     const result = await this._pool.query(query);
@@ -24,13 +25,29 @@ class MenuService {
     return result.rows[0].id;
   }
 
+  async addMenuCover(filename, menuId) {
+    const url = `http://${config.server.host}:${config.server.port}/menu/${menuId}/covers/${filename}`;
+
+    const query = {
+      text: 'UPDATE menu SET cover_url = $1 WHERE id = $2',
+      values: [url, menuId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      throw new NotFoundError('Gagal memperbarui cover, Id tidak ditemukan.');
+    }
+  }
+
   async getMenu() {
     const result = await this._pool.query(`
             SELECT 
                 m.id,
                 m.name,
                 m.price,
-                c.name
+                m.cover_url AS cover,
+                c.name AS category
             FROM menu m
                 LEFT JOIN categories c ON c.id = m.category_id
         `);
@@ -49,7 +66,8 @@ class MenuService {
                 m.id,
                 m.name,
                 m.price,
-                c.name AS category_name
+                m.cover_url AS cover,
+                c.name AS category
             FROM menu m
                 LEFT JOIN categories c ON c.id = m.category_id
                 WHERE m.id = $1

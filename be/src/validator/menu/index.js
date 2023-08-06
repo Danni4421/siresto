@@ -1,5 +1,9 @@
 const InvariantError = require('../../exceptions/client/InvariantError');
-const { PostMenuPayloadSchema, PutMenuPayloadSchema } = require('./schema');
+const {
+  PostMenuPayloadSchema,
+  PutMenuPayloadSchema,
+  PostCoverImageHeaderSchema,
+} = require('./schema');
 
 const MenuValidator = {
   validatePostMenuPayload: (payload) => {
@@ -12,6 +16,14 @@ const MenuValidator = {
 
   validatePutMenuPayload: (payload) => {
     const validationResult = PutMenuPayloadSchema.validate(payload);
+
+    if (validationResult.error) {
+      throw new InvariantError(validationResult.error.message);
+    }
+  },
+
+  validateMenuCoverHeaderPayload: (payload) => {
+    const validationResult = PostCoverImageHeaderSchema.validate(payload);
 
     if (validationResult.error) {
       throw new InvariantError(validationResult.error.message);

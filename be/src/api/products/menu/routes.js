@@ -1,3 +1,5 @@
+const path = require('path');
+
 const routes = (handler) => [
   {
     method: 'POST',
@@ -5,6 +7,19 @@ const routes = (handler) => [
     handler: handler.postMenuHandler,
     options: {
       auth: 'siresto_jwt',
+    },
+  },
+  {
+    method: 'POST',
+    path: '/menu/{id}/covers',
+    handler: handler.postMenuCoverHandler,
+    options: {
+      auth: 'siresto_jwt',
+      payload: {
+        allow: 'multipart/form-data',
+        multipart: true,
+        output: 'stream',
+      },
     },
   },
   {
@@ -21,6 +36,15 @@ const routes = (handler) => [
     handler: handler.getMenuByIdHandler,
     options: {
       auth: 'siresto_jwt',
+    },
+  },
+  {
+    method: 'GET',
+    path: '/menu/{id}/covers/{param*}',
+    handler: {
+      directory: {
+        path: path.resolve(__dirname, 'covers/img'),
+      },
     },
   },
   {

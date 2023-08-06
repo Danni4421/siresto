@@ -1,28 +1,35 @@
 const routes = (handler) => [
   {
     method: 'POST',
-    path: '/employee',
+    path: '/employees',
     handler: handler.postEmployeesHandler,
+    options: {
+      auth: 'superadmin_jwt',
+    },
   },
   {
     method: 'GET',
-    path: '/employee',
+    path: '/employees',
     handler: handler.getEmployeesHandler,
+    options: {
+      auth: 'siresto_jwt' || 'superadmin_jwt',
+    },
   },
   {
     method: 'GET',
-    path: '/employee/{id}',
+    path: '/employees/{id}',
     handler: handler.getEmployeeByIdHandler,
-  },
-  {
-    method: 'PUT',
-    path: '/employee/{id}',
-    handler: handler.putEmployeeByIdHandler,
+    options: {
+      auth: 'siresto_jwt' || 'superadmin_jwt',
+    },
   },
   {
     method: 'DELETE',
-    path: '/employee/{id}',
+    path: '/employees/{id}',
     handler: handler.deleteEmployeeByIdHandler,
+    options: {
+      auth: 'superadmin_jwt',
+    },
   },
 ];
 

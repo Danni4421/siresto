@@ -4,8 +4,9 @@ const InvariantError = require('../../../exceptions/client/InvariantError');
 const NotFoundError = require('../../../exceptions/client/NotFoundError');
 
 class IngredientsService {
-  constructor() {
+  constructor(cacheService) {
     this._pool = new Pool();
+    this._cacheService = cacheService;
   }
 
   async addIngredients({ name, price, stock, unit }) {
@@ -21,36 +22,60 @@ class IngredientsService {
       throw new InvariantError('Gagal menambahkan bahan baku.');
     }
 
+    await this._cacheService.remove('ingredients');
+
     return result.rows[0].id;
   }
 
   async getIngredients() {
-    const result = await this._pool.query(`
+    const key = 'ingredients';
+    try {
+      const result = await this._cacheService.get(key);
+      const ingredients = JSON.parse(result);
+      return ingredients;
+    } catch (error) {
+      const result = await this._pool.query(`
         SELECT id, name, stock FROM ingredients;
     `);
 
-    if (!result.rowCount) {
-      throw new NotFoundError('Gagal mendapatkan bahan baku.');
-    }
+      if (!result.rowCount) {
+        throw new NotFoundError('Gagal mendapatkan bahan baku.');
+      }
 
-    return result.rows;
+      const ingredients = result.rows;
+      const value = JSON.stringify(ingredients);
+      await this._cacheService.set(key, value);
+
+      return ingredients;
+    }
   }
 
   async getIngredientById(ingredientId) {
-    const query = {
-      text: 'SELECT * FROM ingredients WHERE id = $1',
-      values: [ingredientId],
-    };
+    const key = `ingredient:${ingredientId}`;
+    try {
+      const result = await this._cacheService.get(key);
+      const ingredient = JSON.parse(result);
+      return ingredient;
+    } catch (error) {
+      const query = {
+        text: 'SELECT * FROM ingredients WHERE id = $1',
+        values: [ingredientId],
+      };
 
-    const result = await this._pool.query(query);
+      const result = await this._pool.query(query);
 
-    if (!result.rowCount) {
-      throw new NotFoundError(
-        'Gagal mendapatkan bahan baku, Id tidak ditemukan.'
-      );
+      if (!result.rowCount) {
+        throw new NotFoundError(
+          'Gagal mendapatkan bahan baku, Id tidak ditemukan.'
+        );
+      }
+
+      const ingredient = result.rows[0];
+      const value = JSON.stringify(ingredient);
+      await this._cacheService.set(key, value);
+
+      return ingredient;
     }
-
-    return result.rows[0];
   }
 
   async putIngredientById(ingredientId, { name, price, stock, unit }) {
@@ -73,6 +98,8 @@ class IngredientsService {
         'Gagal memperbarui bahan baku, Id tidak ditemukan.'
       );
     }
+
+    await this._cacheService.remove(`ingredient:${ingredientId}`);
   }
 
   async deleteIngredientById(ingredientId) {
@@ -88,6 +115,8 @@ class IngredientsService {
         'Gagal menghapus bahan baku, Id tidak ditemukan.'
       );
     }
+
+    await this._cacheService.remove(`ingredient:${ingredientId}`);
   }
 
   async updateIngredientStock(ingredientId, updatedStock) {
@@ -101,6 +130,8 @@ class IngredientsService {
     if (!result.rowCount) {
       throw new NotFoundError('Gagal memperbarui stock, Id tidak ditemukan.');
     }
+
+    await this._cacheService.remove(`ingredient:${ingredientId}`);
   }
 
   async verifyIngredientStock(ingredientId, neededStock) {

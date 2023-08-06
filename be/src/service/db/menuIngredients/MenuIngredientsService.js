@@ -4,8 +4,9 @@ const InvariantError = require('../../../exceptions/client/InvariantError');
 const NotFoundError = require('../../../exceptions/client/NotFoundError');
 
 class MenuIngredientsService {
-  constructor() {
+  constructor(cacheService) {
     this._pool = new Pool();
+    this._cacheService = cacheService;
   }
 
   async addMenuIngredients({ menuId, ingredientId, qty }) {
@@ -21,12 +22,20 @@ class MenuIngredientsService {
       throw new InvariantError('Gagal menambahkan bahan baku menu.');
     }
 
+    await this._cacheService.remove(`menu-ingredients:${menuId}`);
+
     return result.rows[0].id;
   }
 
   async getMenuIngredients(menuId) {
-    const query = {
-      text: `
+    const key = `menu-ingredients:${menuId}`;
+    try {
+      const result = await this._cacheService.get(key);
+      const menuIngredients = JSON.parse(result);
+      return menuIngredients;
+    } catch (error) {
+      const query = {
+        text: `
         SELECT 
           i.id,
           i.name,
@@ -36,16 +45,21 @@ class MenuIngredientsService {
             LEFT JOIN ingredients i ON i.id = mi.ingredient_id
             WHERE mi.menu_id = $1
       `,
-      values: [menuId],
-    };
+        values: [menuId],
+      };
 
-    const result = await this._pool.query(query);
+      const result = await this._pool.query(query);
 
-    if (!result.rowCount) {
-      throw new NotFoundError('Gagal mendapatkan bahan baku menu.');
+      if (!result.rowCount) {
+        throw new NotFoundError('Gagal mendapatkan bahan baku menu.');
+      }
+
+      const menuIngredients = result.rows;
+      const value = JSON.stringify(menuIngredients);
+      await this._cacheService.set(key, value);
+
+      return menuIngredients;
     }
-
-    return result.rows;
   }
 
   async deleteMenuIngredient(menuId, ingredientId) {
@@ -59,6 +73,8 @@ class MenuIngredientsService {
     if (!result.rowCount) {
       throw new NotFoundError('Gagal menghapus bahan baku menu.');
     }
+
+    await this._cacheService.remove(`menu-ingredients:${menuId}`);
   }
 }
 

@@ -5,8 +5,9 @@ const NotFoundError = require('../../../exceptions/client/NotFoundError');
 const InvariantError = require('../../../exceptions/client/InvariantError');
 
 class MenuService {
-  constructor() {
+  constructor(cacheService) {
     this._pool = new Pool();
+    this._cacheService = cacheService;
   }
 
   async addMenu({ name, price, categoryId, coverUrl }) {
@@ -21,6 +22,8 @@ class MenuService {
     if (!result.rowCount) {
       throw new InvariantError('Gagal menambahkan menu.');
     }
+
+    await this._cacheService.remove('menu');
 
     return result.rows[0].id;
   }
@@ -38,10 +41,20 @@ class MenuService {
     if (!result.rowCount) {
       throw new NotFoundError('Gagal memperbarui cover, Id tidak ditemukan.');
     }
+
+    await this._cacheService.remove(`menu:${menuId}`);
   }
 
   async getMenu() {
-    const result = await this._pool.query(`
+    const key = `menu`;
+
+    try {
+      const result = await this._cacheService.get(key);
+      const menu = JSON.parse(result);
+      return menu;
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        const result = await this._pool.query(`
             SELECT 
                 m.id,
                 m.name,
@@ -52,16 +65,28 @@ class MenuService {
                 LEFT JOIN categories c ON c.id = m.category_id
         `);
 
-    if (!result.rowCount) {
-      throw new NotFoundError('Gagal mendapatkan menu.');
-    }
+        if (!result.rowCount) {
+          throw new NotFoundError('Gagal mendapatkan menu.');
+        }
 
-    return result.rows;
+        const menu = result.rows;
+        const value = JSON.stringify(menu);
+        await this._cacheService.set(key, value);
+
+        return menu;
+      }
+    }
   }
 
   async getMenuById(menuId) {
-    const query = {
-      text: `
+    const key = `menu:${menuId}`;
+    try {
+      const result = await this._cacheService.get(key);
+      const menu = JSON.parse(result);
+      return menu;
+    } catch (error) {
+      const query = {
+        text: `
             SELECT 
                 m.id,
                 m.name,
@@ -72,16 +97,21 @@ class MenuService {
                 LEFT JOIN categories c ON c.id = m.category_id
                 WHERE m.id = $1
         `,
-      values: [menuId],
-    };
+        values: [menuId],
+      };
 
-    const result = await this._pool.query(query);
+      const result = await this._pool.query(query);
 
-    if (!result.rowCount) {
-      throw new NotFoundError('Gagal mendapatkan menu, Id tidak ditemukan.');
+      if (!result.rowCount) {
+        throw new NotFoundError('Gagal mendapatkan menu, Id tidak ditemukan.');
+      }
+
+      const menu = result.rows[0];
+      const value = JSON.stringify(menu);
+      await this._cacheService.set(key, value);
+
+      return menu;
     }
-
-    return result.rows[0];
   }
 
   async putMenuById(menuId, { name, price, categoryId }) {
@@ -101,6 +131,8 @@ class MenuService {
     if (!result.rowCount) {
       throw new NotFoundError('Gagal memperbarui menu, Id tidak ditemukan');
     }
+
+    await this._cacheService.remove(`menu:${menuId}`);
   }
 
   async deleteMenuById(menuId) {
@@ -114,6 +146,8 @@ class MenuService {
     if (!result.rowCount) {
       throw new NotFoundError('Gagal menghapus menu, Id tidak ditemukan.');
     }
+
+    await this._cacheService.remove(`menu:${menuId}`);
   }
 }
 

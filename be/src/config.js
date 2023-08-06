@@ -13,6 +13,9 @@ const config = {
     refreshTokenKey: process.env.REFRESH_TOKEN_SUPER_ADMIN_KEY,
     maxAge: process.env.ACCESS_TOKEN_AGE_SUPER_ADMIN,
   },
+  cache: {
+    host: process.env.REDIS_SERVER,
+  },
 };
 
 module.exports = config;

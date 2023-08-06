@@ -48,16 +48,18 @@ const SuperAdminsValidator = require('./validator/super_admins');
 const SuperAdminTokenManager = require('./tokenize/SuperAdminTokenManager');
 
 const StorageService = require('./service/storage/StorageService');
+const CacheService = require('./service/cache/CacheService');
 
 const register = async (server) => {
+  const cacheService = new CacheService();
   const usersService = new UsersService();
   const employeesService = new EmployeesService();
   const chefsService = new ChefsService();
   const adminsService = new AdminsService();
   const categoriesService = new CategoriesService();
-  const menuService = new MenuService();
-  const ingredientsService = new IngredientsService();
-  const menuIngredientsService = new MenuIngredientsService();
+  const menuService = new MenuService(cacheService);
+  const ingredientsService = new IngredientsService(cacheService);
+  const menuIngredientsService = new MenuIngredientsService(cacheService);
   const transactionsService = new TransactionsService();
   const authenticationsService = new AuthenticationsService();
   const superAdminsService = new SuperAdminsService();

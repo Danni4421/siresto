@@ -5,8 +5,9 @@ const InvariantError = require('../../../exceptions/client/InvariantError');
 const NotFoundError = require('../../../exceptions/client/NotFoundError');
 
 class TransactionsService {
-  constructor() {
+  constructor(cacheService) {
     this._pool = new Pool();
+    this._cacheService = cacheService;
   }
 
   async addTransactions(userId, { menuId, date, qty, status }) {
@@ -22,12 +23,20 @@ class TransactionsService {
       throw new InvariantError('Gagal menambahkan transaksi.');
     }
 
+    await this._cacheService.remove(`transactions:${userId}`);
+
     return result.rows[0].id;
   }
 
   async getTransactions(userId) {
-    const query = {
-      text: `
+    const key = `transactions:${userId}`;
+    try {
+      const result = await this._cacheService.get(key);
+      const transactions = JSON.parse(result);
+      return transactions;
+    } catch (error) {
+      const query = {
+        text: `
             SELECT 
                 m.name,
                 (m.price * t.qty) AS "total"
@@ -35,16 +44,21 @@ class TransactionsService {
                     LEFT JOIN menu m ON t.menu_id = m.id
                     WHERE t.user_id = $1
         `,
-      values: [userId],
-    };
+        values: [userId],
+      };
 
-    const result = await this._pool.query(query);
+      const result = await this._pool.query(query);
 
-    if (!result.rowCount) {
-      throw new NotFoundError('Gagal mendapatkan transaksi user.');
+      if (!result.rowCount) {
+        throw new NotFoundError('Gagal mendapatkan transaksi user.');
+      }
+
+      const transactions = result.rows;
+      const value = JSON.stringify(transactions);
+      await this._cacheService.set(key, value);
+
+      return transactions;
     }
-
-    return result.rows;
   }
 
   async deleteTransactionById(transactionId, userId) {
@@ -58,6 +72,8 @@ class TransactionsService {
     if (!result.rowCount) {
       throw new Error('Gagal menghapus transaksi.');
     }
+
+    await this._cacheService.remove(`transactions:${userId}`);
   }
 }
 

@@ -1,8 +1,10 @@
+const fs = require('fs');
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const config = require('../../../config');
 const NotFoundError = require('../../../exceptions/client/NotFoundError');
 const InvariantError = require('../../../exceptions/client/InvariantError');
+const InternalServerError = require('../../../exceptions/server/InternalServerError');
 
 class MenuService {
   constructor(cacheService) {
@@ -42,11 +44,12 @@ class MenuService {
       throw new NotFoundError('Gagal memperbarui cover, Id tidak ditemukan.');
     }
 
+    await this._cacheService.remove('menu');
     await this._cacheService.remove(`menu:${menuId}`);
   }
 
   async getMenu() {
-    const key = `menu`;
+    const key = 'menu';
 
     try {
       const result = await this._cacheService.get(key);
@@ -72,7 +75,6 @@ class MenuService {
         const menu = result.rows;
         const value = JSON.stringify(menu);
         await this._cacheService.set(key, value);
-
         return menu;
       }
     }
@@ -132,12 +134,13 @@ class MenuService {
       throw new NotFoundError('Gagal memperbarui menu, Id tidak ditemukan');
     }
 
+    await this._cacheService.remove('menu');
     await this._cacheService.remove(`menu:${menuId}`);
   }
 
-  async deleteMenuById(menuId) {
+  async deleteMenuById(menuId, imgPath) {
     const query = {
-      text: 'DELETE FROM menu WHERE id = $1 RETURNING id',
+      text: 'DELETE FROM menu WHERE id = $1 RETURNING cover_url AS url',
       values: [menuId],
     };
 
@@ -147,6 +150,21 @@ class MenuService {
       throw new NotFoundError('Gagal menghapus menu, Id tidak ditemukan.');
     }
 
+    if (result.rows[0].url !== null) {
+      const coverUrl = result.rows[0].url;
+      const parts = coverUrl.split('/');
+      const filename = parts.slice(-1)[0];
+
+      try {
+        fs.unlink(`${imgPath}/${filename}`, (err) => {
+          if (err) throw err;
+        });
+      } catch (err) {
+        throw InternalServerError('Terjadi kegagalan sistem.');
+      }
+    }
+
+    await this._cacheService.remove('menu');
     await this._cacheService.remove(`menu:${menuId}`);
   }
 }

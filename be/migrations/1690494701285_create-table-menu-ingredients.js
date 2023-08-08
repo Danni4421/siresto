@@ -23,13 +23,13 @@ exports.up = (pgm) => {
   pgm.addConstraint(
     'menu_ingredients',
     'fk_menu_ingredients.menu_id_menu.id',
-    'FOREIGN KEY (menu_id) REFERENCES menu(id)'
+    'FOREIGN KEY (menu_id) REFERENCES menu(id) ON DELETE CASCADE'
   );
 
   pgm.addConstraint(
     'menu_ingredients',
     'fk_menu_ingredients.ingredient_id.ingredients.id',
-    'FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)'
+    'FOREIGN KEY (ingredient_id) REFERENCES ingredients(id) ON DELETE CASCADE'
   );
 };
 

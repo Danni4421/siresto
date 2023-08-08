@@ -26,17 +26,11 @@ const routes = (handler) => [
     method: 'GET',
     path: '/menu',
     handler: handler.getMenuHandler,
-    options: {
-      auth: 'siresto_jwt',
-    },
   },
   {
     method: 'GET',
     path: '/menu/{id}',
     handler: handler.getMenuByIdHandler,
-    options: {
-      auth: 'siresto_jwt',
-    },
   },
   {
     method: 'GET',

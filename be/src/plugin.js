@@ -50,6 +50,10 @@ const SuperAdminTokenManager = require('./tokenize/SuperAdminTokenManager');
 const StorageService = require('./service/storage/StorageService');
 const CacheService = require('./service/cache/CacheService');
 
+const reviews = require('./api/products/reviews');
+const ReviewsService = require('./service/db/reviews/ReviewsService');
+const ReviewsValidator = require('./validator/reviews');
+
 const register = async (server) => {
   const cacheService = new CacheService();
   const usersService = new UsersService();
@@ -60,7 +64,8 @@ const register = async (server) => {
   const menuService = new MenuService(cacheService);
   const ingredientsService = new IngredientsService(cacheService);
   const menuIngredientsService = new MenuIngredientsService(cacheService);
-  const transactionsService = new TransactionsService();
+  const transactionsService = new TransactionsService(cacheService);
+  const reviewsService = new ReviewsService(cacheService);
   const authenticationsService = new AuthenticationsService();
   const superAdminsService = new SuperAdminsService();
   const storageService = new StorageService(
@@ -144,6 +149,13 @@ const register = async (server) => {
         menuIngredientsService,
         ingredientsService,
         validator: TransactionsValidator,
+      },
+    },
+    {
+      plugin: reviews,
+      options: {
+        service: reviewsService,
+        validator: ReviewsValidator,
       },
     },
     {

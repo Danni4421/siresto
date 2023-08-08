@@ -1,4 +1,5 @@
 const autoBind = require('auto-bind');
+const path = require('path');
 
 class MenuHandler {
   constructor(menuService, chefsService, storageService, validator) {
@@ -86,9 +87,10 @@ class MenuHandler {
   async deleteMenuByIdHandler(request) {
     const { id: userId } = request.auth.credentials;
     const { id: menuId } = request.params;
+    const imgPath = path.resolve(__dirname, 'covers/img');
 
     await this._chefsService.verifyChef(userId);
-    await this._menuService.deleteMenuById(menuId);
+    await this._menuService.deleteMenuById(menuId, imgPath);
     return {
       status: 'success',
       message: 'Berhasil menghapus menu.',

@@ -165,7 +165,6 @@ class UsersService {
     }
 
     const { id, password: hashedPassword } = result.rows[0];
-    console.log({ id, hashedPassword });
 
     const isMatch = await bcrypt.compare(password, hashedPassword);
 

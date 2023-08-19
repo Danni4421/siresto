@@ -13,6 +13,9 @@ const routes = (handler) => [
     method: 'GET',
     path: '/users/{id}',
     handler: handler.getUserByIdHandler,
+    options: {
+      auth: 'siresto_jwt',
+    },
   },
   {
     method: 'PUT',

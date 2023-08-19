@@ -9,11 +9,11 @@ class AuthenticationsService {
     this._pool = new Pool();
   }
 
-  async addRefreshToken(refreshToken) {
+  async addAccessToken(accessToken) {
     const id = `auth-${nanoid(16)}`;
     const query = {
       text: 'INSERT INTO authentications VALUES ($1, $2) RETURNING id',
-      values: [id, refreshToken],
+      values: [id, accessToken],
     };
 
     const result = await this._pool.query(query);
@@ -23,10 +23,10 @@ class AuthenticationsService {
     }
   }
 
-  async deleteRefreshToken(refreshToken) {
+  async deleteAccessToken(accessToken) {
     const query = {
       text: 'DELETE FROM authentications WHERE token = $1 RETURNING id',
-      values: [refreshToken],
+      values: [accessToken],
     };
 
     const result = await this._pool.query(query);
@@ -34,21 +34,6 @@ class AuthenticationsService {
     if (!result.rowCount) {
       throw new NotFoundError(
         'Gagal menghapus refresh token, Refresh token tidak valid.'
-      );
-    }
-  }
-
-  async verifyRefreshToken(refreshToken) {
-    const query = {
-      text: 'SELECT * FROM authentications WHERE token = $1',
-      values: [refreshToken],
-    };
-
-    const result = await this._pool.query(query);
-
-    if (!result.rowCount) {
-      throw new AuthenticationError(
-        'Gagal melakukan verifikasi refresh token, token tidak valid.'
       );
     }
   }

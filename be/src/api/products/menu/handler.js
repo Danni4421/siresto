@@ -70,6 +70,32 @@ class MenuHandler {
     };
   }
 
+  async getMenuStockHandler(request) {
+    const { id: menuId } = request.params;
+    const stock = await this._menuService.getMenuStock(menuId);
+
+    return {
+      status: 'success',
+      message: 'Berhasil mendapatkan stock',
+      data: {
+        stock,
+      },
+    };
+  }
+
+  async searchMenuHandler(request) {
+    const { name } = request.query;
+    const menu = await this._menuService.searchMenu(name);
+
+    return {
+      status: 'success',
+      message: 'Berhasil mendapatkan menu',
+      data: {
+        menu,
+      },
+    };
+  }
+
   async putMenuByIdHandler(request) {
     this._validator.validatePutMenuPayload(request.payload);
     const { id: userId } = request.auth.credentials;

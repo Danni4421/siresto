@@ -36,7 +36,18 @@ class ReviewsService {
       const reviews = JSON.parse(result);
       return reviews;
     } catch (error) {
-      const result = await this._pool.query('SELECT * FROM reviews');
+      const result = await this._pool.query(`
+        SELECT 
+          r.id,
+          u.first_name AS "firstName",
+          u.last_name AS "lastName",
+          m.name AS "menuName",
+          r.comment,
+          r.star
+          FROM reviews r
+            LEFT JOIN users u ON r.user_id = u.id
+            LEFT JOIN menu m ON r.menu_id = m.id
+      `);
 
       if (!result.rowCount) {
         throw new NotFoundError('Gagal mendapatkan review.');
@@ -58,7 +69,15 @@ class ReviewsService {
       return reviewUser;
     } catch (error) {
       const query = {
-        text: 'SELECT * FROM reviews WHERE user_id = $1',
+        text: `
+          SELECT 
+            u.name,
+            r.review,
+            r.star
+          FROM reviews r
+            LEFT JOIN users u ON r.user_id = u.id
+            WHERE r.user_id = $1, 
+        `,
         values: [userId],
       };
 
@@ -84,7 +103,15 @@ class ReviewsService {
       return reviewMenu;
     } catch (error) {
       const query = {
-        text: 'SELECT * FROM reviews WHERE menu_id = $1',
+        text: `SELECT 
+        r.id,
+        r.comment,
+        r.star,
+        u.first_name AS "firstName",
+        u.last_name AS "lastName"
+        FROM reviews r 
+        LEFT JOIN users u ON u.id = r.user_id
+        WHERE r.menu_id = $1`,
         values: [menuId],
       };
 

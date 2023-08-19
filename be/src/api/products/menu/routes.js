@@ -34,6 +34,16 @@ const routes = (handler) => [
   },
   {
     method: 'GET',
+    path: '/menu/{id}/stock',
+    handler: handler.getMenuStockHandler,
+  },
+  {
+    method: 'GET',
+    path: '/menu/search',
+    handler: handler.searchMenuHandler,
+  },
+  {
+    method: 'GET',
     path: '/menu/{id}/covers/{param*}',
     handler: {
       directory: {

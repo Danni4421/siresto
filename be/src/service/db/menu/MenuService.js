@@ -116,6 +116,48 @@ class MenuService {
     }
   }
 
+  async getMenuStock(menuId) {
+    const query = {
+      text: `
+        SELECT 
+          i.stock / mi.qty AS stock
+          FROM menu_ingredients mi 
+            LEFT JOIN ingredients i ON i.id = mi.ingredient_id
+            WHERE mi.menu_id = $1 
+            GROUP BY i.stock / mi.qty
+      `,
+      values: [menuId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      throw new NotFoundError('Stock tidak mencukupi.');
+    }
+
+    return result.rows[0];
+  }
+
+  async searchMenu(name) {
+    const query = {
+      text: `
+        SELECT 
+            m.id,
+            m.name,
+            m.price,
+            m.cover_url AS cover,
+            c.name AS category
+        FROM menu m
+          LEFT JOIN categories c ON c.id = m.category_id
+          WHERE LOWER(m.name) LIKE $1
+      `,
+      values: [`%${name}%`],
+    };
+
+    const result = await this._pool.query(query);
+    return result.rows;
+  }
+
   async putMenuById(menuId, { name, price, categoryId }) {
     const query = {
       text: `

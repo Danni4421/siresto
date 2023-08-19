@@ -54,6 +54,10 @@ const reviews = require('./api/products/reviews');
 const ReviewsService = require('./service/db/reviews/ReviewsService');
 const ReviewsValidator = require('./validator/reviews');
 
+const carts = require('./api/transactions/carts');
+const CartsService = require('./service/db/carts/CartsService');
+const CartsValidator = require('./validator/carts');
+
 const register = async (server) => {
   const cacheService = new CacheService();
   const usersService = new UsersService();
@@ -66,6 +70,7 @@ const register = async (server) => {
   const menuIngredientsService = new MenuIngredientsService(cacheService);
   const transactionsService = new TransactionsService(cacheService);
   const reviewsService = new ReviewsService(cacheService);
+  const cartsService = new CartsService();
   const authenticationsService = new AuthenticationsService();
   const superAdminsService = new SuperAdminsService();
   const storageService = new StorageService(
@@ -156,6 +161,15 @@ const register = async (server) => {
       options: {
         service: reviewsService,
         validator: ReviewsValidator,
+      },
+    },
+    {
+      plugin: carts,
+      options: {
+        service: cartsService,
+        ingredientsService,
+        menuIngredientsService,
+        validator: CartsValidator,
       },
     },
     {

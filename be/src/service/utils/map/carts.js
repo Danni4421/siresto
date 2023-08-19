@@ -1,9 +1,8 @@
-const MapCartsToModels = ({ id, name, qty, order_date, status }) => ({
+const MapCartsToModels = ({ id, user_id, menu_id, qty }) => ({
   id,
-  name,
+  userId: user_id,
+  menuId: menu_id,
   qty,
-  orderDate: order_date,
-  status,
 });
 
 module.exports = MapCartsToModels;

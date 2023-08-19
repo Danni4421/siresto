@@ -38,10 +38,16 @@ class TransactionsService {
       const query = {
         text: `
             SELECT 
+                t.id,
+                t.transaction_date AS tanggal,
+                t.transaction_status AS status,
                 m.name,
-                (m.price * t.qty) AS "total"
+                c.name AS category,
+                m.cover_url AS cover,
+                (m.price * t.qty) AS total
                 FROM transactions t
                     LEFT JOIN menu m ON t.menu_id = m.id
+                    LEFT JOIN categorie c ON c.id = m.category_id
                     WHERE t.user_id = $1
         `,
         values: [userId],

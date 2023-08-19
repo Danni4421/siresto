@@ -119,10 +119,10 @@ class IngredientsService {
     await this._cacheService.remove(`ingredient:${ingredientId}`);
   }
 
-  async updateIngredientStock(ingredientId, updatedStock) {
+  async updateIngredientStock(ingredientId, qtyTransactions) {
     const query = {
-      text: 'UPDATE ingredients SET stock = $1 WHERE id = $2',
-      values: [updatedStock, ingredientId],
+      text: 'UPDATE ingredients SET stock = stock - $1 WHERE id = $2',
+      values: [qtyTransactions, ingredientId],
     };
 
     const result = await this._pool.query(query);
@@ -148,12 +148,11 @@ class IngredientsService {
 
     const { name, stock } = result.rows[0];
 
+    console.log({ stock, neededStock });
+
     if (stock < neededStock) {
       throw new InvariantError(`Bahan baku ${name} telah habis.`);
     }
-
-    const updatedStock = stock - neededStock;
-    await this.updateIngredientStock(ingredientId, updatedStock);
   }
 }
 

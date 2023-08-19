@@ -14,14 +14,6 @@ const AuthenticationsValidator = {
     }
   },
 
-  validatePutAuthenticationPayload: (payload) => {
-    const validationResult = PutAuthenticationsPayloadSchema.validate(payload);
-
-    if (validationResult.error) {
-      throw new InvariantError(validationResult.error.message);
-    }
-  },
-
   validateDeleteAuthenticationPayload: (payload) => {
     const validationResult =
       DeleteAuthenticationsPayloadSchema.validate(payload);

@@ -11,9 +11,6 @@ const routes = (handler) => [
     method: 'GET',
     path: '/reviews',
     handler: handler.getReviewsHandler,
-    options: {
-      auth: 'siresto_jwt',
-    },
   },
   {
     method: 'GET',
@@ -27,17 +24,11 @@ const routes = (handler) => [
     method: 'GET',
     path: '/reviews/menu/{id}',
     handler: handler.getReviewMenuHandler,
-    options: {
-      auth: 'siresto_jwt',
-    },
   },
   {
     method: 'GET',
     path: '/reviews/menu/{id}/rate',
     handler: handler.getMenuRatingHandler,
-    options: {
-      auth: 'siresto_jwt',
-    },
   },
   {
     method: 'PUT',
